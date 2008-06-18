@@ -11,6 +11,7 @@ use Test::More;
 use Test::Differences;
 use Test::Exception;
 use Test::Deep;
+use Test::Warn;
 
 use Test::Builder;
 my $OK_FUNC;
@@ -24,15 +25,17 @@ Test::Most - Most commonly needed test functions and features.
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
-B<WARNING>:  This is alpha code.  It seems to work well, but use with caution.
+B<WARNING>:  This is beta code.  It seems to work well, but use with caution.
+The prior version (0.01) was alpha, but it's been stable and people are happy
+with it.
 
 This module provides you with the most commonly used testing functions and
 gives you a bit more fine-grained control over your test suite.
@@ -62,6 +65,8 @@ your namespace:
 
 =item * C<Test::Deep> 
 
+=item * C<Test::Warn>
+
 =back
 
 Functions which are I<optionally> exported from any of those modules must be
@@ -71,7 +76,7 @@ referred to by their fully-qualified name:
 
 =head1 FUNCTIONS
 
-Four other functions are also automatically exported:
+Several other functions are also automatically exported:
 
 =head2 C<die_on_fail>
 
@@ -107,6 +112,23 @@ This is typically set by using the C<-v> switch with C<prove>.
 
 Requires C<Test::Harness> 3.07 or greater.
 
+=head2 C<all_done>
+
+If the plan is specified as C<defer_plan>, you may call C<&all_done> at the
+end of the test with an optional test number.  This lets you set the plan
+without knowing the plan before you run the tests.
+
+If you call it without a test number, the tests will still fail if you don't
+get to the end of the test.  This is useful if you don't want to specify a
+plan but the tests exit successfully.  For example, the following would
+I<pass> with C<no_plan> but fails with C<all_done>.
+
+ use Test::More 'defer_plan';
+ ok 1;
+ exit;
+ ok 2;
+ all_done;
+
 =head1 DIE OR BAIL ON FAIL
 
 Sometimes you want your test suite to die or BAIL_OUT() if a test fails.  In
@@ -136,6 +158,26 @@ behavior (not dieing or bailing out).
 
 The C<die_on_fail> and C<bail_on_fail> functions will automatically set the
 desired behavior at runtime.
+
+=head2 Deferred plans
+
+ use Test::Most qw<defer_plan>;
+ use My::Tests;
+ my $test_count = My::Tests->run;
+ all_done($test_count);
+
+Sometimes it's difficult to know the plan up front, but you can calculate the
+plan as your tests run.  As a result, you want to defer the plan until the end
+of the test.  Typically, the best you can do is this:
+
+ use Test::More 'no_plan';
+ use My::Tests;
+ My::Tests->run;
+
+But when you do that, C<Test::Builder> merely asserts that the number of tests
+you I<ran> is the number of tests.  Until now, there was no way of asserting
+that the number of tests you I<expected> is the number of tests unless you do
+so before any tests have run.  This fixes that problem.
 
 =head2 Environment variables
 
@@ -167,7 +209,8 @@ the top ten (out of 287):
  Test::Deep                127
 
 The four modules chosen seemed the best fit for what C<Test::Most> is trying
-to do.
+to do.  As of 0.02, we've added L<Test::Warn> by request.  It's not in the top
+ten, but it's a great and useful module.
 
 =cut
 
@@ -178,11 +221,14 @@ BEGIN {
         @Test::Differences::EXPORT,
         @Test::Exception::EXPORT,
         @Test::Differences::EXPORT,
+        @Test::Deep::EXPORT,
+        @Test::Warn::EXPORT,
         qw<
             explain
             restore_fail
             die_on_fail
             bail_on_fail
+            all_done
         >
     );
 
@@ -223,6 +269,18 @@ sub import {
             last;
         }
     }
+    for my $i ( 0 .. $#_ ) {
+       if ( 'defer_plan' eq $_[$i] ) {
+            splice @_, $i, 1;
+
+           my $builder = Test::Builder->new;
+           $builder->{Have_Plan} = 1; # don't like setting this directly, but Test::Builder::has_plan doe
+           $builder->{XXX_deferred_plan} = 1;
+           $builder->{XXX_all_done} = 0;
+
+           last;
+       }
+   }
 
     # 'magic' goto to avoid updating the callstack
     goto &Test::Builder::Module::import;
@@ -246,6 +304,15 @@ sub restore_fail {
     no warnings 'redefine';
     *Test::Builder::ok = $OK_FUNC;
 }
+
+sub all_done {
+   my $builder = Test::Builder->new;
+   if ($builder->{XXX_deferred_plan}) {
+       $builder->{XXX_all_done} = 1;
+       $builder->expected_tests(@_ ? $_[0] : $builder->current_test);
+   }
+}
+
 
 sub _set_failure_handler {
     my $action = shift;
@@ -277,6 +344,26 @@ sub _set_failure_handler {
         }
     }
 }
+
+sub _deferred_plan_handler {
+   my $builder = Test::Builder->new;
+   if ($builder->{XXX_deferred_plan} and !$builder->{XXX_all_done})
+   {
+       $builder->expected_tests($builder->current_test + 1);
+   }
+}
+
+# This should work because the END block defined by Test::Builder should be
+# guaranteed to be run before t one, since we use'd Test::Builder way up top.
+# The other two alternatives would be either to replace Test::Builder::_ending
+# similar to how we did Test::Builder::ok, or to call Test::Builder::no_ending
+# and basically rewrite _ending in our own image.  Neither is very palatable,
+# considering _ending's initial underscore.
+
+END {
+   _deferred_plan_handler();
+}
+
 1;
 
 =head1 AUTHOR

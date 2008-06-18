@@ -1,5 +1,13 @@
 Revision history for Test::Most
 
+0.02
+        - Fixed Perl version in Build.PL to avoid problems with smoke testers
+          skipping this test.
+        - Added Test::Warn support.
+        - Fixed bug whereby Test::Deep tests were not exported.  Whoops! :)
+        - Add deferred plans.  Thanks to barefootcoder for this.
+        - Added build dependency on Test::Command (nice module!)
+
 0.01    2008-01-13
-        Use the most common test features.
+        - Use the most common test features.
 

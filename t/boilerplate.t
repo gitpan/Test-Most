@@ -46,9 +46,4 @@ not_in_file_ok(
 
 not_in_file_ok( Changes => "placeholder date/time" => qr(Date/time) );
 
-TODO: {
-    local $TODO = "Need to replace the boilerplate text";
-
-    module_boilerplate_ok('lib/Test/Most.pm');
-}
-
+module_boilerplate_ok('lib/Test/Most.pm');
