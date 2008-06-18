@@ -8,6 +8,7 @@ README
 t/00-load.t
 t/boilerplate.t
 t/common.t
+t/defer_plan.t
 t/env_bail.t
 t/env_die.t
 t/function_bail.t
