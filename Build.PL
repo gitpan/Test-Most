@@ -13,6 +13,7 @@ my $builder = Module::Build->new(
         'Test::Differences' => 0,
         'Test::Deep'        => 0,
         'Test::Harness'     => 3.07,
+        'Test::Warn'        => 0.10,
         'perl'              => '5.006',
     },
     build_requires     => { 'Test::Command' => '0.02', },

@@ -25,11 +25,11 @@ Test::Most - Most commonly needed test functions and features.
 
 =head1 VERSION
 
-Version 0.03
+Version 0.04
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 =head1 SYNOPSIS
 
@@ -120,7 +120,7 @@ without knowing the plan before you run the tests.
 
 If you call it without a test number, the tests will still fail if you don't
 get to the end of the test.  This is useful if you don't want to specify a
-plan but the tests exit successfully.  For example, the following would
+plan but the tests exit unexpectedly.  For example, the following would
 I<pass> with C<no_plan> but fails with C<all_done>.
 
  use Test::More 'defer_plan';
@@ -128,6 +128,8 @@ I<pass> with C<no_plan> but fails with C<all_done>.
  exit;
  ok 2;
  all_done;
+
+See L<Deferred plans> for more information.
 
 =head1 DIE OR BAIL ON FAIL
 

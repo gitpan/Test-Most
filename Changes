@@ -1,12 +1,15 @@
 Revision history for Test::Most
 
+0.04   2008-06-19
+        - Forget to add Test::Warn to Build.pl :)
+
 0.03   2008-06-18
         - Remembered to add t/defer_plan.t to the manifest.  D'oh!
 
 0.02    2008-06-18
         - Fixed Perl version in Build.PL to avoid problems with smoke testers
           skipping this test.
-        - Added Test::Warn support.
+        - Added Test::Warn support (suggestion from benh).
         - Fixed bug whereby Test::Deep tests were not exported.  Whoops! :)
         - Add deferred plans.  Thanks to barefootcoder++ (Buddy Burden) for
           this.
