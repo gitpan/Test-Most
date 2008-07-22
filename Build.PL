@@ -16,7 +16,6 @@ my $builder = Module::Build->new(
         'Test::Warn'        => 0.10,
         'perl'              => '5.006',
     },
-    build_requires     => { 'Test::Command' => '0.02', },
     add_to_cleanup     => ['Test-Most-*'],
     create_makefile_pl => 'traditional',
 );

@@ -1,5 +1,11 @@
 Revision history for Test::Most
 
+0.10    2008-07-22
+        - Rename internal keys to begin with TEST_MOST_ instead of XXX_.
+        - Rework tests to be slightly less comprehensive but more likely to
+          pass (removed the otherwise lovely Test::Command until we can figure
+          out what's up with it).
+
 0.04   2008-06-19
         - Forget to add Test::Warn to Build.pl :)
 

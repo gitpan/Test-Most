@@ -1,6 +1,6 @@
 ---
 name: Test-Most
-version: 0.04
+version: 0.10
 author:
   - 'Curtis Poe <ovid@cpan.org>'
 abstract: Most commonly needed test functions and features.
@@ -15,12 +15,10 @@ requires:
   Test::More: 0
   Test::Warn: 0.1
   perl: 5.006
-build_requires:
-  Test::Command: 0.02
 provides:
   Test::Most:
     file: lib/Test/Most.pm
-    version: 0.04
+    version: 0.10
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html

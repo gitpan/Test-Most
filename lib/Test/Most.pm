@@ -25,11 +25,11 @@ Test::Most - Most commonly needed test functions and features.
 
 =head1 VERSION
 
-Version 0.04
+Version 0.10
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.10';
 
 =head1 SYNOPSIS
 
@@ -277,8 +277,8 @@ sub import {
 
            my $builder = Test::Builder->new;
            $builder->{Have_Plan} = 1; # don't like setting this directly, but Test::Builder::has_plan doe
-           $builder->{XXX_deferred_plan} = 1;
-           $builder->{XXX_all_done} = 0;
+           $builder->{TEST_MOST_deferred_plan} = 1;
+           $builder->{TEST_MOST_all_done} = 0;
 
            last;
        }
@@ -309,8 +309,8 @@ sub restore_fail {
 
 sub all_done {
    my $builder = Test::Builder->new;
-   if ($builder->{XXX_deferred_plan}) {
-       $builder->{XXX_all_done} = 1;
+   if ($builder->{TEST_MOST_deferred_plan}) {
+       $builder->{TEST_MOST_all_done} = 1;
        $builder->expected_tests(@_ ? $_[0] : $builder->current_test);
    }
 }
@@ -319,17 +319,17 @@ sub all_done {
 sub _set_failure_handler {
     my $action = shift;
     no warnings 'redefine';
-    Test::Builder->new->{XXX_failure_action} = $action; # for DESTROY
+    Test::Builder->new->{TEST_MOST_failure_action} = $action; # for DESTROY
     *Test::Builder::ok = sub {
         local $Test::Builder::Level = $Test::Builder::Level + 1;
         my $builder = $_[0];
-        if ( $builder->{XXX_test_failed} ) {
-            $builder->{XXX_test_failed} = 0;
+        if ( $builder->{TEST_MOST_test_failed} ) {
+            $builder->{TEST_MOST_test_failed} = 0;
             $action->();
         }
-        $builder->{XXX_test_failed} = 0;
+        $builder->{TEST_MOST_test_failed} = 0;
         my $result = $OK_FUNC->(@_);
-        $builder->{XXX_test_failed} = !( $builder->summary )[-1];
+        $builder->{TEST_MOST_test_failed} = !( $builder->summary )[-1];
         return $result;
     };
 }
@@ -341,15 +341,15 @@ sub _set_failure_handler {
     # a subsequent test triggering the behavior.
     sub Test::Builder::DESTROY {
         my $builder = $_[0];
-        if ( $builder->{XXX_test_failed} ) {
-            $builder->{XXX_failure_action}->();
+        if ( $builder->{TEST_MOST_test_failed} ) {
+            $builder->{TEST_MOST_failure_action}->();
         }
     }
 }
 
 sub _deferred_plan_handler {
    my $builder = Test::Builder->new;
-   if ($builder->{XXX_deferred_plan} and !$builder->{XXX_all_done})
+   if ($builder->{TEST_MOST_deferred_plan} and !$builder->{TEST_MOST_all_done})
    {
        $builder->expected_tests($builder->current_test + 1);
    }
