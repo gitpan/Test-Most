@@ -25,11 +25,11 @@ Test::Most - Most commonly needed test functions and features.
 
 =head1 VERSION
 
-Version 0.10
+Version 0.11
 
 =cut
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 =head1 SYNOPSIS
 
@@ -107,8 +107,32 @@ longer die or BAIL_OUT().
 
 =head2 C<explain>
 
-Like C<diag()>, but only outputs the message if C<$ENV{TEST_VERBOSE}> is set.
-This is typically set by using the C<-v> switch with C<prove>.
+Similar to C<diag()>, but only outputs the message if C<$ENV{TEST_VERBOSE}> is
+set.  This is typically set by using the C<-v> switch with C<prove>.
+
+Unlike C<diag()>, any reference in the argument list is autumatically expanded
+using C<Data::Dumper>.  Thus, instead of this:
+
+ my $self = Some::Object->new($id);
+ use Data::Dumper;
+ explain 'I was just created', Dumper($self);
+
+You can now just do this:
+
+ my $self = Some::Object->new($id);
+ explain 'I was just created:  ', $self;
+
+That output will look similar to:
+
+ I was just created: bless( {
+   'id' => 2,
+   'stack' => []
+ }, 'Some::Object' )
+
+Note that the "dumpered" output has the C<Data::Dumper> variables
+C<$Indent>, C<Sortkeys> and C<Terse> all set to the value of C<1> (one).  This
+allows for a much cleaner diagnostic output and at the present time cannot be
+overridden.
 
 Requires C<Test::Harness> 3.07 or greater.
 
@@ -290,7 +314,19 @@ sub import {
 
 sub explain {
     return unless $ENV{TEST_VERBOSE};
-    Test::More::diag(@_);
+    Test::More::diag(
+        map {
+            ref $_
+              ? do {
+                require Data::Dumper;
+                local $Data::Dumper::Indent   = 1;
+                local $Data::Dumper::Sortkeys = 1;
+                local $Data::Dumper::Terse    = 1;
+                Data::Dumper::Dumper($_);
+              }
+              : $_
+          } @_
+    );
 }
 
 sub die_on_fail {
@@ -459,6 +495,10 @@ Many thanks to C<perl-qa> for arguing about this so much that I just went
 ahead and did it :)
 
 Thanks to Aristotle for suggesting a better way to die or bailout.
+
+Thanks to 'swillert' (L<http://use.perl.org/~swillert/>) for suggesting a
+better implementation of my "dumper explain" idea
+(L<http://use.perl.org/~Ovid/journal/37004>).
 
 =head1 COPYRIGHT & LICENSE
 

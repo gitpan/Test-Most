@@ -1,5 +1,8 @@
 Revision history for Test::Most
 
+0.11    2008-07-29
+        - explain() now automatically uses Data::Dumper on references.
+
 0.10    2008-07-22
         - Rename internal keys to begin with TEST_MOST_ instead of XXX_.
         - Rework tests to be slightly less comprehensive but more likely to
