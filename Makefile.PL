@@ -9,7 +9,7 @@ WriteMakefile
                            'Test::Differences' => '0',
                            'Test::Exception' => '0',
                            'Test::Harness' => '3.07',
-                           'Test::More' => '0',
+                           'Test::Simple' => '0.82',
                            'Test::Warn' => '0.1'
                          },
           'INSTALLDIRS' => 'site',

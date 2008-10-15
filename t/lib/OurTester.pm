@@ -39,49 +39,42 @@ sub _set_test_failure_handler {
     *Test::Builder::ok = sub {
         local $Test::Builder::Level = $Test::Builder::Level + 1;
         my $builder = $_[0];
-        if ( $builder->{XXX_test_failed} ) {
-            $builder->{XXX_test_failed} = 0;
-            $action->();
+        if ( $builder->{TEST_MOST_test_failed} ) {
+            $builder->{TEST_MOST_test_failed} = 0;
+            $action->($builder);
         }
-        $builder->{XXX_test_failed} = 0;
+        $builder->{TEST_MOST_test_failed} = 0;
         my $result = $ok->(@_);
 
         # Not a fun interface
-        $builder->{XXX_test_failed} = !( $builder->details )[-1]->{actual_ok};
+        $builder->{TEST_MOST_test_failed} = !( $builder->details )[-1]->{actual_ok};
         return $result;
     };
 }
 
 sub dies(&;$) {
     my ( $sub, $message ) = @_;
-    _set_die();
-    package main;
-  TODO: {
-        local $main::TODO = 'Planned failure';
-
-        # ignore the error messages as they will be confusing.
-        $BUILDER->no_diag(1);
-        $sub->();
-        $BUILDER->no_diag(0);
-    }
-    Test::More::ok 1, 'arguments are evaluated *before* ok()';
-    Test::More::ok $DIED, $message;
-    $DIED = 0;
+    _die_or_bail($sub, \&_set_die, $message, \$DIED);
 }
 
 sub bails(&;$) {
     my ( $sub, $message ) = @_;
-    _set_bail();
-    package main;
-  TODO: {
-        local $main::TODO = 'Planned failure';
-        $BUILDER->no_diag(1);
-        $sub->();
-        $BUILDER->no_diag(0);
-    }
+    _die_or_bail($sub, \&_set_bail, $message, \$BAILED);
+}
+
+sub _die_or_bail {
+    my ($sub, $internal_sub, $message, $die_or_bail) = @_;
+    $internal_sub->();
+    $BUILDER->todo_start('Planned failure');
+
+    # ignore the error messages as they will be confusing.
+    $BUILDER->no_diag(1);
+    $sub->();
+    $BUILDER->no_diag(0);
+    $BUILDER->todo_end;
     Test::More::ok 1, 'arguments are evaluated *before* ok()';
-    Test::More::ok $BAILED, $message;
-    $BAILED = 0;
+    Test::More::ok $$die_or_bail, $message;
+    $$die_or_bail = 0;
 }
 
 1;

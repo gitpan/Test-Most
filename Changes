@@ -1,5 +1,9 @@
 Revision history for Test::Most
 
+0.12    
+        - Make sure we don't get redef warnings with Test::Builder 0.82.
+        - Expose &set_failure_handler to people can customize it more.
+
 0.11    2008-07-29
         - explain() now automatically uses Data::Dumper on references.
 

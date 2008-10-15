@@ -3,11 +3,18 @@ package Test::Most;
 use warnings;
 use strict;
 
-# XXX don't use 'base' as it can override our signal handlers
+# XXX don't use 'base' as it can override signal handlers
 use Test::Builder::Module;
 our ( @ISA, @EXPORT );
 
-use Test::More;
+BEGIN {
+
+    # There's some strange fiddling around with import(), so this allows us to
+    # be nicely backwards compatible to earlier versions of Test::More.
+    require Test::More;
+    @Test::More::EXPORT = grep { $_ ne 'explain' } @Test::More::EXPORT;
+    Test::More->import;
+}
 use Test::Differences;
 use Test::Exception;
 use Test::Deep;
@@ -25,17 +32,13 @@ Test::Most - Most commonly needed test functions and features.
 
 =head1 VERSION
 
-Version 0.11
+Version 0.12
 
 =cut
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 =head1 SYNOPSIS
-
-B<WARNING>:  This is beta code.  It seems to work well, but use with caution.
-The prior version (0.01) was alpha, but it's been stable and people are happy
-with it.
 
 This module provides you with the most commonly used testing functions and
 gives you a bit more fine-grained control over your test suite.
@@ -104,6 +107,20 @@ tests fail after it.
 
 This restores the original test failure behavior, so subsequent tests will no
 longer die or BAIL_OUT().
+
+=head2 C<set_failure_handler>
+
+If you prefer other behavior to 'die_on_fail' or 'bail_on_fail', you can can
+set your own failure handler:
+
+ set_failure_handler( sub {
+     my $builder = shift;
+     if ( $builder->{Test_Results}[-1] =~ /critical/ ) {
+        send_admin_email("critical failure in tests");
+     }
+ } );
+
+It receives the C<< Test::Builder >> instance as its only argument.
 
 =head2 C<explain>
 
@@ -255,6 +272,7 @@ BEGIN {
             die_on_fail
             bail_on_fail
             all_done
+            set_failure_handler
         >
     );
 
@@ -330,11 +348,11 @@ sub explain {
 }
 
 sub die_on_fail {
-    _set_failure_handler( sub { die "Test failed.  Stopping test.\n" } );
+    set_failure_handler( sub { die "Test failed.  Stopping test.\n" } );
 }
 
 sub bail_on_fail {
-    _set_failure_handler(
+    set_failure_handler(
         sub { Test::More::BAIL_OUT("Test failed.  BAIL OUT!.\n") } );
 }
 
@@ -352,7 +370,7 @@ sub all_done {
 }
 
 
-sub _set_failure_handler {
+sub set_failure_handler {
     my $action = shift;
     no warnings 'redefine';
     Test::Builder->new->{TEST_MOST_failure_action} = $action; # for DESTROY
@@ -361,7 +379,7 @@ sub _set_failure_handler {
         my $builder = $_[0];
         if ( $builder->{TEST_MOST_test_failed} ) {
             $builder->{TEST_MOST_test_failed} = 0;
-            $action->();
+            $action->($builder);
         }
         $builder->{TEST_MOST_test_failed} = 0;
         my $result = $OK_FUNC->(@_);

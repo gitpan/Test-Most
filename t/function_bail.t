@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use lib 'lib',            't/lib';
-use Test::Most tests => 7;
+use Test::Most 'no_plan';#tests => 7;
 use OurTester qw($BAILED bails);
 
 ok 1, 'Normal calls to ok() should succeed';
