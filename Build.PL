@@ -8,6 +8,7 @@ my $builder = Module::Build->new(
     dist_author       => 'Curtis Poe <ovid@cpan.org>',
     dist_version_from => 'lib/Test/Most.pm',
     requires          => {
+        'Exception::Class'  => 1.14,
         'Test::Simple'      => 0.82,
         'Test::Exception'   => 0,
         'Test::Differences' => 0,

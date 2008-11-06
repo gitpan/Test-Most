@@ -5,6 +5,7 @@ WriteMakefile
           'NAME' => 'Test::Most',
           'VERSION_FROM' => 'lib/Test/Most.pm',
           'PREREQ_PM' => {
+                           'Exception::Class' => '1.14',
                            'Test::Deep' => '0',
                            'Test::Differences' => '0',
                            'Test::Exception' => '0',

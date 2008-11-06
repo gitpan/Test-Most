@@ -3,6 +3,8 @@ package Test::Most;
 use warnings;
 use strict;
 
+use Test::Most::Exception 'throw_failure';
+
 # XXX don't use 'base' as it can override signal handlers
 use Test::Builder::Module;
 our ( @ISA, @EXPORT );
@@ -32,11 +34,11 @@ Test::Most - Most commonly needed test functions and features.
 
 =head1 VERSION
 
-Version 0.12
+Version 0.20
 
 =cut
 
-our $VERSION = '0.12';
+our $VERSION = '0.20';
 
 =head1 SYNOPSIS
 
@@ -84,10 +86,10 @@ Several other functions are also automatically exported:
 =head2 C<die_on_fail>
 
  die_on_fail;
- is_deeply $foo, bar, '... we die if this fails';
+ is_deeply $foo, bar, '... we throw an exception if this fails';
 
-This function, if called, will cause the test program to die if any tests fail
-after it.
+This function, if called, will cause the test program to throw a
+L<Test::Most::Exception>, effectively halting the test.
 
 =head2 C<bail_on_fail>
 
@@ -100,13 +102,13 @@ tests fail after it.
 =head2 C<restore_fail>
 
  die_on_fail;
- is_deeply $foo, bar, '... we die if this fails';
+ is_deeply $foo, bar, '... we throw an exception if this fails';
 
  restore_fail;
- cmp_bag(\@got, \@bag, '... we will not die if this fails';
+ cmp_bag(\@got, \@bag, '... we will not throw an exception if this fails';
 
 This restores the original test failure behavior, so subsequent tests will no
-longer die or BAIL_OUT().
+longer throw an exception or BAIL_OUT().
 
 =head2 C<set_failure_handler>
 
@@ -115,12 +117,16 @@ set your own failure handler:
 
  set_failure_handler( sub {
      my $builder = shift;
-     if ( $builder->{Test_Results}[-1] =~ /critical/ ) {
+     if ( $builder && $builder->{Test_Results}[-1] =~ /critical/ ) {
         send_admin_email("critical failure in tests");
      }
  } );
 
-It receives the C<< Test::Builder >> instance as its only argument.
+It receives the C<< Test::Builder >> instance as its only argument.  
+
+B<Important>:  Note that if the failing test is the very last test run, then
+the C<$builder> will likely be undefined.  This is an unfortunate side effect
+of how C<Test::Builder> has been designed.
 
 =head2 C<explain>
 
@@ -174,9 +180,9 @@ See L<Deferred plans> for more information.
 
 =head1 DIE OR BAIL ON FAIL
 
-Sometimes you want your test suite to die or BAIL_OUT() if a test fails.  In
-order to provide maximum flexibility, there are three ways to accomplish each
-of these.
+Sometimes you want your test suite to throw an exception or BAIL_OUT() if a
+test fails.  In order to provide maximum flexibility, there are three ways to
+accomplish each of these.
 
 =head2 Import list
 
@@ -184,9 +190,9 @@ of these.
  use Test::Most qw< no_plan bail >;
 
 If C<die> or C<bail> is anywhere in the import list, the test program/suite
-will C<die> or C<BAIL_OUT()> as appropriate the first time a test fails.
-Calling C<restore_fail> anywhere in the test program will restore the original
-behavior (not dieing or bailing out).
+will throw a C<Test::Most::Exception> or C<BAIL_OUT()> as appropriate the
+first time a test fails.  Calling C<restore_fail> anywhere in the test program
+will restore the original behavior (not throwing an exception or bailing out).
 
 =head2 Functions
 
@@ -194,7 +200,7 @@ behavior (not dieing or bailing out).
  ok $bar, 'The test suite will continue if this passes';
 
  die_on_fail;
- is_deeply $foo, bar, '... we die if this fails';
+ is_deeply $foo, bar, '... we throw an exception if this fails';
 
  restore_fail;
  ok $baz, 'The test suite will continue if this passes';
@@ -228,7 +234,8 @@ so before any tests have run.  This fixes that problem.
  BAIL_ON_FAIL=1 prove t/
 
 If the C<DIE_ON_FAIL> or C<BAIL_ON_FAIL> environment variables are true, any
-tests which use C<Test::Most> will die or call BAIL_OUT on test failure.
+tests which use C<Test::Most> will throw an exception or call BAIL_OUT on test
+failure.
 
 =head1 RATIONALE
 
@@ -273,6 +280,7 @@ BEGIN {
             bail_on_fail
             all_done
             set_failure_handler
+            last_test_failed
         >
     );
 
@@ -348,7 +356,7 @@ sub explain {
 }
 
 sub die_on_fail {
-    set_failure_handler( sub { die "Test failed.  Stopping test.\n" } );
+    set_failure_handler( sub { throw_failure } );
 }
 
 sub bail_on_fail {
@@ -498,14 +506,15 @@ That would be cleaner and I might add it if enough people want it.
 
 Because of how Perl handles arguments, and because diagnostics are not really
 part of the Test Anything Protocol, what actually happens internally is that
-we note that a test has failed and we die or bail out as soon as the I<next>
-test is called (but before it runs).  This means that its arguments are
-automatically evaulated before we can take action:
+we note that a test has failed and we throw an exception or bail out as soon
+as the I<next> test is called (but before it runs).  This means that its
+arguments are automatically evaulated before we can take action:
 
  use Test::Most qw<no_plan die>;
 
  ok $foo, 'Die if this fails';
- ok factorial(123456), '... but wait a loooong time before you die';
+ ok factorial(123456),
+   '... but wait a loooong time before you throw an exception';
 
 =head1 ACKNOWLEDGEMENTS
 

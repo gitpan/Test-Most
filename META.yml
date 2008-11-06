@@ -1,6 +1,6 @@
 ---
 name: Test-Most
-version: 0.12
+version: 0.20
 author:
   - 'Curtis Poe <ovid@cpan.org>'
 abstract: Most commonly needed test functions and features.
@@ -8,6 +8,7 @@ license: perl
 resources:
   license: http://dev.perl.org/licenses/
 requires:
+  Exception::Class: 1.14
   Test::Deep: 0
   Test::Differences: 0
   Test::Exception: 0
@@ -18,7 +19,10 @@ requires:
 provides:
   Test::Most:
     file: lib/Test/Most.pm
-    version: 0.12
+    version: 0.20
+  Test::Most::Exception:
+    file: lib/Test/Most/Exception.pm
+    version: 0.20
 generated_by: Module::Build version 0.2808
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.2.html
