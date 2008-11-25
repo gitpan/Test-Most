@@ -3,6 +3,7 @@
 use Test::More tests => 9;
 
 BEGIN {
+    local $^W;
     use_ok('Test::Most')
       or BAIL_OUT("Cannot load Test::Most");
     use_ok('Test::Most::Exception')

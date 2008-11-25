@@ -7,7 +7,7 @@ use Test::Most::Exception 'throw_failure';
 
 # XXX don't use 'base' as it can override signal handlers
 use Test::Builder::Module;
-our ( @ISA, @EXPORT );
+our ( @ISA, @EXPORT, $DATA_DUMPER_NAMES_INSTALLED );
 
 BEGIN {
 
@@ -34,11 +34,11 @@ Test::Most - Most commonly needed test functions and features.
 
 =head1 VERSION
 
-Version 0.20
+Version 0.20_01
 
 =cut
 
-our $VERSION = '0.20';
+our $VERSION = '0.20_01';
 
 =head1 SYNOPSIS
 
@@ -159,6 +159,30 @@ overridden.
 
 Requires C<Test::Harness> 3.07 or greater.
 
+=head2 C<show>
+
+Experimental.  Just like C<explain>, but also tries to show you the variable
+names:
+
+ my $var   = 3;
+ my @array = qw/ foo bar /;
+ show $var, \@array;
+ __END__
+ $var = 3;
+ @array = [
+     'foo',
+     'bar'
+ ];
+
+It will show C<$VAR1>, C<$VAR2> ... C<$VAR_N> for every variable it cannot
+figure out the variable name to:
+
+ my @array = qw/ foo bar /;
+ show @array;
+ __END__
+ $VAR1 = 'foo';
+ $VAR2 = 'bar';
+
 =head2 C<all_done>
 
 If the plan is specified as C<defer_plan>, you may call C<&all_done> at the
@@ -274,13 +298,14 @@ BEGIN {
         @Test::Deep::EXPORT,
         @Test::Warn::EXPORT,
         qw<
-            explain
-            restore_fail
-            die_on_fail
-            bail_on_fail
             all_done
-            set_failure_handler
+            bail_on_fail
+            die_on_fail
+            explain
             last_test_failed
+            restore_fail
+            set_failure_handler
+            show
         >
     );
 
@@ -299,6 +324,10 @@ BEGIN {
 
 sub import {
     my $bail_set = 0;
+
+    eval "use Data::Dumper::Names 0.03";
+    $DATA_DUMPER_NAMES_INSTALLED = !$@;
+
     if ( $ENV{BAIL_ON_FAIL} ) {
         $bail_set = 1;
         bail_on_fail();
@@ -353,6 +382,19 @@ sub explain {
               : $_
           } @_
     );
+}
+
+sub show {
+    return unless $ENV{TEST_VERBOSE};
+    unless ( $DATA_DUMPER_NAMES_INSTALLED ) {
+        warn "Data::Dumper::Names 0.03 not found.  Use explain() instead of show()";
+        goto &explain;
+    }
+    no warnings 'once';
+    local $Data::Dumper::Indent         = 1;
+    local $Data::Dumper::Sortkeys       = 1;
+    local $Data::Dumper::Names::UpLevel = $Data::Dumper::Names::UpLevel + 1;
+    Test::More::diag(Data::Dumper::Names::Dumper(@_));
 }
 
 sub die_on_fail {

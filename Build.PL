@@ -17,6 +17,9 @@ my $builder = Module::Build->new(
         'Test::Warn'        => 0.10,
         'perl'              => '5.006',
     },
+    recommends => {
+        'Data::Dumper::Names' => 0.03,
+    },
     add_to_cleanup     => ['Test-Most-*'],
     create_makefile_pl => 'traditional',
 );

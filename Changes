@@ -1,5 +1,8 @@
 Revision history for Test::Most
 
+0.20_01 2008-11-25
+        - Added &show.  Like &explain, but tries to show variable names.
+
 0.20    2008-11-06
         - If a test dies because die_on_fail() or 'Test::Most qw(die)' is
           triggered, we now throw a 'Test::Most::Exception' rather than simply
