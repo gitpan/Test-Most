@@ -34,11 +34,11 @@ Test::Most - Most commonly needed test functions and features.
 
 =head1 VERSION
 
-Version 0.20_01
+Version 0.20_02
 
 =cut
 
-our $VERSION = '0.20_01';
+our $VERSION = '0.20_02';
 
 =head1 SYNOPSIS
 
@@ -161,8 +161,8 @@ Requires C<Test::Harness> 3.07 or greater.
 
 =head2 C<show>
 
-Experimental.  Just like C<explain>, but also tries to show you the variable
-names:
+Experimental.  Just like C<explain>, but also tries to show you the lexical
+variable names:
 
  my $var   = 3;
  my @array = qw/ foo bar /;
@@ -182,6 +182,12 @@ figure out the variable name to:
  __END__
  $VAR1 = 'foo';
  $VAR2 = 'bar';
+
+Note that this relies on L<Data::Dumper::Names> version 0.03 or greater.  If
+this is not present, it will warn and call L<explain> instead.  Also, it can
+only show the names for lexical variables.  Globals such as C<%ENV> or C<%@>
+are not accessed via PadWalker and thus cannot be shown.  It would be nice to
+find a workaround for this.
 
 =head2 C<all_done>
 

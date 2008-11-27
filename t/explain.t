@@ -33,11 +33,17 @@ my $aref = [qw/this that/];
     $expected = Dumper($aref);
     $expected =~ s/VAR1/aref/;
     show $aref;
-    eq_or_diff \@EXPLAIN,  [$expected],
-        '... and show() should try to show the variable name';
 
-    show 3;
-    chomp @EXPLAIN;
-    eq_or_diff \@EXPLAIN, ['$VAR1 = 3;'],
-        '... but will default to $VARX names if it can\'t';
+    SKIP: {
+        eval "use Data::Dumper::Names ()";
+        skip 'show() requires Data::Dumper::Names version 0.03 or better', 2
+            if $@ or $Data::Dumper::Names::VERSION < .03;
+        eq_or_diff \@EXPLAIN,  [$expected],
+            '... and show() should try to show the variable name';
+
+        show 3;
+        chomp @EXPLAIN;
+        eq_or_diff \@EXPLAIN, ['$VAR1 = 3;'],
+            '... but will default to $VARX names if it can\'t';
+    }
 }
