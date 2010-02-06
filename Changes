@@ -1,6 +1,15 @@
 Revision history for Test::Most
 
-0.21_02 2010-02-0:
+0.21_03 2010-02-06
+        - Bump up dependency on Test::Builder.  Need that for done_testing()
+          and to deprecate all_done().
+        - Remove strict and warnings from tests since they no longer need them
+          :)
+        - Decided to bump up the minimum version number for all test modules.
+          This module should be "one stop shopping" for most people.
+        - Moderately significant POD update.
+
+0.21_02 2010-02-06
         - Import strict an warnings.
         - Increase version requirement for
           https://rt.cpan.org/Ticket/Display.html?id=44790  Thanks to Gerda
