@@ -3,7 +3,9 @@ Changes
 lib/Test/Most.pm
 lib/Test/Most/Exception.pm
 Makefile.PL
-MANIFEST
+MANIFEST			This list of files
+MANIFEST.SKIP
+META.json
 META.yml
 README
 t/00-load.t

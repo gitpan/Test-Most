@@ -18,7 +18,7 @@ BEGIN {
     @Test::More::EXPORT = grep { $_ ne 'explain' } @Test::More::EXPORT;
     Test::More->import;
     eval "use Time::HiRes";
-    $HAVE_TIME_HIRES = 1 unless @_;
+    $HAVE_TIME_HIRES = 1 unless $@;
 }
 
 use Test::Builder;
@@ -33,11 +33,11 @@ Test::Most - Most commonly needed test functions and features.
 
 =head1 VERSION
 
-Version 0.25
+Version 0.30
 
 =cut
 
-our $VERSION = '0.25';
+our $VERSION = '0.30';
 $VERSION = eval $VERSION;
 
 =head1 SYNOPSIS
@@ -317,6 +317,19 @@ failure.
 
 =head1 MISCELLANEOUS
 
+=head2 Moose
+
+It used to be that this module would produce a warning when used with Moose:
+
+    Prototype mismatch: sub main::blessed ($) vs none
+
+This was because L<Test::Deep> exported a C<blessed()> function by default,
+but its prototype did not match the L<Moose> version's prototype. We now
+excluse the L<Test::Deep> version by default. If you need it, you can call the
+fully-qualified version or request it on the command line:
+
+    use Test::Most 'blessed';
+
 =head2 Excluding Test Modules
 
 Sometimes you want a exclude a particular test module.  For example,
@@ -483,6 +496,13 @@ sub import {
 
     my @exclude_symbols;
     my $i = 0;
+
+    if ( grep { $_ eq 'blessed' } @_ ) {
+        @_ = grep { $_ ne 'blessed' } @_;
+    }
+    else {
+        push @exclude_symbols => 'blessed';
+    }
     while ($i < @_) {
         if ( !$bail_set and ( 'die' eq $_[$i] ) ) {
             splice @_, $i, 1;
@@ -598,7 +618,8 @@ sub always_show {
 
 sub _show {
     unless ( $DATA_DUMPER_NAMES_INSTALLED ) {
-        warn "Data::Dumper::Names 0.03 not found.  Use explain() instead of show()";
+        require Carp;
+	Carp::carp("Data::Dumper::Names 0.03 not found.  Use explain() instead of show()");
         goto &_explain;
     }
     my $diag = shift;

@@ -2,9 +2,11 @@
 abstract: 'Most commonly needed test functions and features.'
 author:
   - "Curtis \"Ovid\" Poe <ovid@cpan.org>"
+build_requires: {}
 configure_requires:
-  Module::Build: 0.36
-generated_by: 'Module::Build version 0.3607'
+  Module::Build: 0.4
+dynamic_config: 1
+generated_by: 'Module::Build version 0.4, CPAN::Meta::Converter version 2.120351'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -13,10 +15,10 @@ name: Test-Most
 provides:
   Test::Most:
     file: lib/Test/Most.pm
-    version: 0.25
+    version: 0.30
   Test::Most::Exception:
     file: lib/Test/Most/Exception.pm
-    version: 0.25
+    version: 0.30
 recommends:
   Data::Dumper::Names: 0.03
 requires:
@@ -31,4 +33,4 @@ requires:
 resources:
   license: http://dev.perl.org/licenses/
   repository: http://github.com/Ovid/test--most
-version: 0.25
+version: 0.30
