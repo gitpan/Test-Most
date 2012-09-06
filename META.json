@@ -38,11 +38,11 @@
    "provides" : {
       "Test::Most" : {
          "file" : "lib/Test/Most.pm",
-         "version" : "0.30"
+         "version" : "0.31"
       },
       "Test::Most::Exception" : {
          "file" : "lib/Test/Most/Exception.pm",
-         "version" : "0.30"
+         "version" : "0.31"
       }
    },
    "release_status" : "stable",
@@ -54,5 +54,5 @@
          "url" : "http://github.com/Ovid/test--most"
       }
    },
-   "version" : "0.30"
+   "version" : "0.31"
 }
